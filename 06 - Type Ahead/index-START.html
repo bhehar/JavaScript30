@@ -15,8 +15,59 @@
     </ul>
   </form>
 <script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+  const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+  const cities = [];
+  const searchField = document.querySelector('.search');
+  const suggestionList = document.querySelector('.suggestions');
 
+  fetch(endpoint)
+    .then( resp => resp.json())
+    .then( data => cities.push(...data));
+
+  function findMatches(searchTerm, cityArray) {
+    return cityArray.filter( item => {
+      let re = new RegExp(searchTerm, 'ig');
+      return item.city.match(re) || item.state.match(re);
+    });
+  };
+
+  //my shot at implementation without help from video
+  // function displayMatches(event) {
+  //   suggesList.innerHTML = '';
+  //   const userInput = this.value
+  //   if (userInput) {
+  //     const matchArray = findMatches(this.value, cities);
+  //     console.log(this.value)
+  //     matchArray.forEach(element => {
+  //       const li = document.createElement('li');
+  //       li.innerText = `${element.city}, ${element.state}`;
+  //       suggesList.appendChild(li);
+  //     });
+  //   }
+  // };
+  
+  //video implementation + my improvements
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  }
+
+  function displayMatches() {
+    const matchArray = findMatches(this.value, cities);
+    const html = matchArray.map(place => {
+      const regex = new RegExp(this.value, 'gi');
+      const cityState = `${place.city}, ${place.state}`.replace(regex, `<span class="hl">${this.value}</span>`)
+      const pop = numberWithCommas(place.population);
+      return `
+        <li>
+          <span class="name"> ${cityState} </span>
+          <span class = "population">${pop}</span>
+        </li>
+      `;
+    }).join('') //we're joining the list of html content
+    suggestionList.innerHTML = html;
+  }
+
+  searchField.addEventListener('input', displayMatches);
 </script>
 </body>
 </html>
